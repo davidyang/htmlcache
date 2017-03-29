@@ -33,7 +33,7 @@ class Htmlcache_HtmlcacheService extends BaseApplicationComponent
             ob_start();
         }
     }
-    
+
     public function canCreateCacheFile()
     {
         // Skip if we're running in devMode
@@ -58,7 +58,7 @@ class Htmlcache_HtmlcacheService extends BaseApplicationComponent
         if (craft()->request->isLivePreview()) {
             return false;
         }
-        
+
         // Skip if it's a post/ajax request
         if (!craft()->request->isGetRequest()) {
             return false;
@@ -66,10 +66,24 @@ class Htmlcache_HtmlcacheService extends BaseApplicationComponent
 
         return true;
     }
-    
+
+    public function header_sent($header) {
+        $headers = headers_list();
+        $header = trim($header,': ');
+        $result = false;
+
+        foreach ($headers as $hdr) {
+            if (stripos($hdr, $header) > -1) {
+                $result = true;
+            }
+        }
+        return $result;
+    }
+
     public function createCacheFile()
     {
-        if ($this->canCreateCacheFile() && http_response_code() == 200) {
+        // if ($this->canCreateCacheFile() && http_response_code() == 200) {
+        if ($this->canCreateCacheFile() && !$this->header_sent("No-Cache") && http_response_code() == 200) {
             $content = ob_get_contents();
             ob_end_flush();
             $file = $this->getCacheFileName();
@@ -83,7 +97,7 @@ class Htmlcache_HtmlcacheService extends BaseApplicationComponent
             }
         }
     }
-    
+
     public function clearCacheFiles()
     {
         // @todo split between all/single cache file
@@ -92,17 +106,17 @@ class Htmlcache_HtmlcacheService extends BaseApplicationComponent
         }
         return true;
     }
-    
+
     private function getCacheFileName($withDirectory = true)
     {
         return \htmlcache_filename($withDirectory);
     }
-    
+
     private function getCacheFileDirectory()
     {
         return \htmlcache_directory();
     }
-    
+
     public function log($settings, $errors, $level)
     {
         // Firstly, store in plugin log file (use $level to control log level)
