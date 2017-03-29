@@ -73,7 +73,7 @@ class Htmlcache_HtmlcacheService extends BaseApplicationComponent
         $result = false;
 
         foreach ($headers as $hdr) {
-            if (stripos($hdr, $header) > -1) {
+            if (strpos($hdr, $header) !== false) {
                 $result = true;
             }
         }
@@ -82,7 +82,6 @@ class Htmlcache_HtmlcacheService extends BaseApplicationComponent
 
     public function createCacheFile()
     {
-        // if ($this->canCreateCacheFile() && http_response_code() == 200) {
         if ($this->canCreateCacheFile() && !$this->header_sent("No-Cache") && http_response_code() == 200) {
             $content = ob_get_contents();
             ob_end_flush();
